@@ -1,0 +1,119 @@
+version = 1.3 ; defines version it needs
+
+window = "Insanity Flyff"
+
+; all variables are global
+int: module = module: Neuz.exe
+int: select = module + 8B1498 > 20
+int: random_target = module + 89F19C
+
+write: module + 34CC28, 908935
+write.dword: module + 34CC28 + 3, random_target
+
+write: module + 34CC2F, EB
+write: module + 88A97, EB
+
+; this is built in function
+range = {
+	; built in option
+	ON = {
+		; writing actual range
+		write: module + 2D992B, EB5390909090
+		write.float: module + 7334D0, 31337f
+		
+		; writing range to all classes
+		write: module + 2D8D5F, 9090
+	}
+	
+	; built in option
+	OFF = {
+		; writing actual range back, how it was
+		write: module + 2D992B, 0F8793000000
+		write.float: module + 7334D0, 18f
+		
+		; setting back when using range skill
+		write: module + 2D8D5F, 7510
+	}
+}
+
+; this is built in thread
+spamSkill = {
+	; built in option
+	options = {
+		1, 31
+		2, 32
+		; you can add more lines like example shows
+	}
+	
+	; milliseconds
+	sleep: 300
+}
+
+; this is built in thread
+autoSelectTarget = {
+	; when u press "ON" button, then this section get infinite loop with sleep time
+	ON = {																; built in option
+		; this function or section only runs once
+		once = {
+			; no need to overflow terminal or command prompt
+			debug = false ; options are: 1 or true, 0 or false
+			int: myxposAddr = module + 5F0140 > 160
+			
+			;write: module + 27D49A, 90B8
+			;write.dword: module + 27D49A +2, myxposAddr
+		}
+		
+		int: is_att = read: module + 8B10C8 > 354 > 4
+		int: selected_random = read: random_target
+		
+		if: is_att == 1
+			float: camera_rot = module + 8B23D4 > 0						; elite style reading float ^^
+			if: camera_rot << 360f										; "f" at end of the number tell pylaf that we're dealing with float
+				write.float: module + 8B23D4, camera_rot +8f
+			else
+				write.float: module + 8B23D4, 0f
+			endif
+			
+			if: selected_random << 100000000i							; "i" at number end tells pylaf that we're dealing with integer
+				if: selected_random != module + 8B10C8 > 0
+					write.int: select, selected_random
+					sleep: 50
+					;print.var: selected_random
+				endif
+			endif
+		endif
+		
+	}
+	
+	; on version 1.2 this got OFF loop :D
+	OFF = {
+		once = {
+			debug = false
+			;write: module + 27D49A, 8D8560010000
+		}
+	}
+	
+	; milliseconds
+	sleep: 100
+}
+
+; on version 1.3 this got cutsom function
+; custom function
+gather_moving_objects = {
+	gui.label: "gather moving objects"
+	
+	ON = {
+		int: shit = module + 8B10C8 > 164
+		
+		write.dword: module + 2C85D1 +4, shit
+		write: module + 2C85D1, F30F7E05
+		
+		write.dword: module + 2C85D9 +2, shit +8
+		write: module + 2C85D9, 90A1
+	}
+	
+	OFF = {
+		write: module + 2C85D1, F30F7E8764010000
+		write: module + 2C85D9, 8B876C010000
+	}
+}

@@ -1,0 +1,39 @@
+version = 1.2 ; defines version it needs
+
+window = "Insanity Flyff"
+
+int: module = module: Neuz.exe
+
+; this is built in thread
+mouseClickTeleport = {
+	; built in option
+	ON = {
+		once = {
+			debug = false
+		}
+		
+		; in pylaf funtcions arent like in other languages: func(arg1, arg2, ...)
+		; virtual key codes: https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
+		float: key_result = GetAsyncKeyState: A2					; in pylaf function is: func: arg1, arg2, ...
+																	; needs to be float because int cant be -(minus) here
+		
+		if: key_result != 0											; -32768 = key is down and 0x8000
+			float: key_result = GetAsyncKeyState: 01
+			
+			if: key_result != 0
+				; time to sleep is in milliseconds
+				sleep: 100											; sleep to sync memory with cheat
+				
+				int: player_pos = module + 8B10C8 > 164
+				write.int: player_pos, module + 8A5774 > 0			; read cant be called in write so reading elite way ^^
+				write.int: player_pos +4, module + 8A5774 +4 > 0 + 40000
+				write.int: player_pos +8, module + 8A5774 +8 > 0
+			endif
+		endif
+	}
+	
+	; no need off function here, and theres no OFF option for it too
+	
+	; milliseconds
+	sleep: 10
+}
