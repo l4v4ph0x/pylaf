@@ -1,0 +1,105 @@
+; dream flyff config/script for pylaf
+; evryting thats written here(outside) gets executed right away
+version = 1.2 ; defines version it needs
+
+window = "Dream Flyff"
+
+; all variables are global
+int: module = module: Neuz.exe
+int: random_target = module + 5E1844
+int: select = module + 5F3DC8 > 20
+
+
+;write: module + 2F43FE, 9090
+write: module + 2EBEBB, 890D					; mov eax to some addr: mov [addr], eax
+write.dword: module + 2EBEBB +2, random_target	; write.dowrd writes dword(address) to memory
+												; its like "mov dword ptr[addr], eax"
+
+; this is built in function
+range = {
+	; built in option
+	ON = {
+		; writing actual range
+		write: module + 289179, EB
+		write: module + 2891C8 +7, 70
+		
+		; writing range to all classes
+		write: module + 289421, 9090
+	}
+	
+	; built in option
+	OFF = {
+		; writing actual range back, how it was
+		write: module + 289179, 77
+		write: module + 2891C8 +7, 00
+		
+		; setting back when using range skill
+		write: module + 289421, 7512
+	}
+}
+
+; this is built in thread
+spamSkill = {
+	; built in option
+	options = {
+		F1, 70
+		F2, 71
+		; you can add more lines like example shows
+	}
+	
+	; milliseconds
+	sleep: 100
+}
+
+; this is built in thread
+autoSelectTarget = {
+	; when u press "ON" button, then this section get infinite loop with sleep time
+	ON = {															; built in option
+		; this function or section only runs once
+		once = {
+			; no need to overflow terminal or command prompt
+			debug = false ; options are: 1 or true, 0 or false
+			int: myxposAddr = module + 5F0140 > 160
+			
+			write.dword: module + 27D6AA +2, myxposAddr
+			write: module + 27D6AA, 90B8
+		}
+		
+		int: is_att = read: module + 5F0140 > 9CC
+		int: selected_random = read: random_target
+		
+		if: is_att == 0
+			float: camera_rot = module + 5F1474 > 0					; elite style reading float ^^
+			if: camera_rot << 360f									; "f" at end of the number tell pylaf that we're dealing with float
+				write.float: module + 5F1474, camera_rot +8f
+			else
+				write.float: module + 5F1474, 0f
+			endif
+			
+			if: selected_random << 100000000i						; "i" at number end tells pylaf that we're dealing with integer
+																	; by defailt numbers are read in hex
+				if: module + B57584 > 0 != selected_random			; elite style reading int from memory. if my char val not equals random target
+																	; ">" gets value from mem before that mark and adds value after ">" mark
+																	; so u can do: module + 2 > 30 > module + 20i > 1 > 2+2
+																	; like this pylaf do not store variable
+					write.int: select, selected_random
+				endif
+			endif
+		endif
+	}
+	
+	; on version 1.2 this got OFF loop :D
+	OFF = {
+		once = {
+			debug = false
+			write: module + 27D6AA, 8D8560010000
+		}
+	}
+	
+	; milliseconds
+	sleep: 100
+}
+
+
+
+; pylaf 2.0 will be supporting custom thread creation
